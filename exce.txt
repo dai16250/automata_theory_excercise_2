@@ -1,0 +1,8 @@
+1
+S
+1
+F
+3
+S aSa
+S bSb
+S c
