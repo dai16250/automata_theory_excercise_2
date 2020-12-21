@@ -1,5 +1,5 @@
 import sys, getopt
-
+from numpy import *
 
 class Grammar:
     def __init__(self):
@@ -19,17 +19,31 @@ def initialize_grammar(G):
     else:
         print('The file has been opened, scanning the grammar now')
 
-    tmp = inputfile.read().splitlines()
+    tmp = inputfile.read().split()
 
     K = int(tmp[0])
     for x in range(1, 1+K):
         G.non_ending_conditions.append(tmp[x])
+
     L = int(tmp[K+1])
     for x in range(K+1+L, K+2+L):
         G.ending_conditions.append(tmp[x])
+
     N = int(tmp[K+L+2])
-    for x in range(K+L+2, K+L+N+3):
-        pass
+
+    matrix = []
+    list = []
+
+
+    for x in range(K+L+2, K+L+N+3,2):
+        list.append(tmp[x])
+        list.append(tmp[x+1])
+        matrix.append(list)
+
+
+    list.append(0)
+    print(matrix)
+
 
     print(G.non_ending_conditions)
     print(G.ending_conditions)
@@ -42,8 +56,8 @@ def main(argv):
         print('test.py -i <inputfile.txt> -o <outputfile.txt')
         sys.exit(2)
 
-    if len(sys.argv) > 2:
-        print("not enough arguments please try again... system terminates......")
+    if len(sys.argv) != 2:
+        print("Not the correct format.... python test.py <file.txt>")
         sys.exit(1)
 
     G = Grammar()
