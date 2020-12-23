@@ -1,7 +1,8 @@
-1
-s
+4
+svcz
 1
 f
+s
 3
 S aSa
 S bSb

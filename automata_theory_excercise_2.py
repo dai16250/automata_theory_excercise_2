@@ -1,11 +1,33 @@
 import sys, getopt
 from numpy import *
 
+class TreeNode:
+    def __init__(self, data):
+        self.parent = None
+        self.children = []
+        self.data = data
+
+    def get_parent_node(self):
+        print( str ( self.data.parent))
+        return self.parent
+
+    def add_child(self, child):
+        child.parent = self
+        self.children.append(child)
+
+    def print_tree(self):
+        print(self.data)
+        if self.children:
+            for child in self.children:
+                child.print_tree()
+
+
 
 class Grammar:
     def __init__(self, file):
         self.total_conditions = []
         self.non_ending_conditions = []
+        self.beginning_conditions = []
         self.ending_conditions = []
         self.automate_stack = []
         self.alphabet = []
@@ -16,32 +38,43 @@ class Grammar:
         tmp = self.file.read().split()
 
         K = int(tmp[0])
-        for x in range(1, 1 + K):
-            self.non_ending_conditions.append(tmp[x])
-            self.total_conditions.append(tmp[x])
 
-        L = int(tmp[K + 1])
-        for x in range(K + 1 + L, K + 2 + L):
-            self.ending_conditions.append(tmp[x])
-            self.total_conditions.append(tmp[x])
+        for X in range(0 , K):
+            if tmp[1][X] not in self.total_conditions:
+                self.non_ending_conditions.append(tmp[1][X])
+                self.total_conditions.append(tmp[1][X])
+            else:
+                print("There are at least 2 identical non-ending-conditions and the system cannot process this... "
+                      "the program will terminate")
+                sys.exit(1)
+        L = int(tmp[2])
 
-        N = int(tmp[K + L + 2])
+        for x in range(0,L):
+            if tmp[3][x] not in self.total_conditions:
+                self.ending_conditions.append(tmp[3][x])
+                self.total_conditions.append(tmp[3][x])
+            else:
+                print("There are at least 2 identical ending-conditions and the system cannot process this... the "
+                      "program will terminate")
+                sys.exit(1)
+
+        self.beginning_conditions.append(str(tmp[4]))
+
+        N = int(tmp[5])
 
         col = 2
         rows = N
-        step = K + L + N
 
-        for j in range(0, rows):
-            for i in range(0, col):
-                for x in range(len(tmp[step + 2 * j + i])):
-                    if tmp[(step + 2 * j + i)][x] not in self.alphabet:
-                        self.alphabet.append(str(tmp[(step + 2 * j + i)][x]))
+        for x in range(6,6+N*2):
+            for y in range(0, len(tmp[x])):
+                if tmp[x][y] not in self.alphabet:
+                    self.alphabet.append(tmp[x][y])
 
         self.matrix = [[0 for x in range(col)] for y in range(rows + len(self.alphabet))]
 
         for j in range(0, rows):
             for i in range(0, col):
-                self.matrix[j][i] = tmp[(step + 2 * j + i)]
+                self.matrix[j][i] = tmp[(j*2 + i + 6)]
 
         j = len(self.matrix) - len(self.alphabet)
         for letter in self.alphabet:
@@ -55,25 +88,34 @@ class Grammar:
         print("  - K =" + str(self.total_conditions))
         print("  - Σ =" + str(self.alphabet))
         print("  - Γ =")
-        print("  - s =" + str(self.non_ending_conditions))
+        print("  - s =" + str(self.beginning_conditions))
         print("  - F =" + str(self.ending_conditions))
         print("  - D = ")
         print(*self.matrix, sep='\n')
 
+def create_tree(g , r):
+
+    r.print_tree()
+
+
 
 def initialize_grammar():
+
     try:
         print("The file is scanned... ")
         inputfile = open(sys.argv[1], 'r')
         g = Grammar(inputfile)
         g.initialize_grammar()
-
         g.print_grammar()
     except:
         print("file is not correct and did not open.... please put a correct root")
         sys.exit(1)
     else:
         print('The grammar has been created correctly...')
+
+        root = TreeNode(str(g.beginning_conditions[0]))
+        create_tree(g, root)
+
 
 
 def main(argv):
