@@ -1,9 +1,14 @@
-4
-svcz
-1
-f
-s
 3
-S aSa
-S bSb
-S c
+SAB
+1
+F
+S
+8
+S aSb
+S @
+S aA
+S bB
+A aA
+A @
+B bB
+B @

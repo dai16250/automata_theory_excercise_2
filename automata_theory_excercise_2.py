@@ -21,6 +21,23 @@ class TreeNode:
             for child in self.children:
                 child.print_tree()
 
+    def create_tree(self, g, List):
+
+        List.append(self.data)
+        self.add_child(TreeNode(str(self.data)))
+
+        if len(List)>0:
+
+            for child in self.children:
+                for x in range(0, len(g.matrix)):
+                    print(child.data)
+                    print(g.matrix[x][1])
+                    if str(child.data) is str(g.matrix[x][0]):
+                        self.add_child(TreeNode(str(g.matrix[x][1])))
+                    break
+                    self.create_tree(g,List)
+
+        self.print_tree()
 
 
 class Grammar:
@@ -70,18 +87,12 @@ class Grammar:
                 if tmp[x][y] not in self.alphabet:
                     self.alphabet.append(tmp[x][y])
 
-        self.matrix = [[0 for x in range(col)] for y in range(rows + len(self.alphabet))]
+        self.matrix = [[0 for x in range(col)] for y in range(rows)]
 
         for j in range(0, rows):
             for i in range(0, col):
                 self.matrix[j][i] = tmp[(j*2 + i + 6)]
 
-        j = len(self.matrix) - len(self.alphabet)
-        for letter in self.alphabet:
-            if str(letter) != 'S':
-                self.matrix[j][0] = str(letter)
-                self.matrix[j][1] = str(letter)
-                j += 1
 
     def print_grammar(self):
         print("M = (K ,Σ ,Γ , Δ , s , F)")
@@ -93,9 +104,6 @@ class Grammar:
         print("  - D = ")
         print(*self.matrix, sep='\n')
 
-def create_tree(g , r):
-
-    r.print_tree()
 
 
 
@@ -114,7 +122,9 @@ def initialize_grammar():
         print('The grammar has been created correctly...')
 
         root = TreeNode(str(g.beginning_conditions[0]))
-        create_tree(g, root)
+        List = []
+        root.create_tree(g, List)
+
 
 
 
