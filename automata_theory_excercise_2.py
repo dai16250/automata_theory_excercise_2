@@ -1,11 +1,53 @@
 import sys, getopt
 from numpy import *
 
+class LinkedList:
+
+    def __init__(self, nodes=None):
+        self.head = None
+        if nodes is not None:
+            node = Node(data=nodes.pop(0))
+            self.head = node
+            for elem in nodes:
+                node.next = Node(data=elem)
+                node = node.next
+
+    def __repr__(self):
+        node = self.head
+        nodes = []
+        while node is not None:
+            nodes.append(node.data)
+            node = node.next
+        nodes.append("None")
+        return " -> ".join(nodes)
+
+    def __iter__(self):
+        node = self.head
+        while node is not None:
+            yield node
+            node = node.next
+
+class Node:
+    def __init__(self,data):
+        self.data = data
+        self.next = None
+
 class TreeNode:
     def __init__(self, data):
         self.parent = None
         self.children = []
         self.data = data
+
+
+    def get_level(self):
+
+        level = 0
+        p = self.parent
+        while p:
+            level += 1
+            p = p.parent
+
+        return level
 
     def get_parent_node(self):
         print( str ( self.data.parent))
@@ -16,7 +58,9 @@ class TreeNode:
         self.children.append(child)
 
     def print_tree(self):
-        print(self.data)
+        spaces = ' '*self.get_level()*3
+        prefix = spaces + "|__" if self.parent else ""
+        print(prefix + self.data)
         if self.children:
             for child in self.children:
                 child.print_tree()
@@ -24,19 +68,25 @@ class TreeNode:
     def create_tree(self, g, List):
 
         List.append(self.data)
+
         self.add_child(TreeNode(str(self.data)))
 
         if len(List)>0:
 
             for child in self.children:
                 for x in range(0, len(g.matrix)):
-                    print(child.data)
-                    print(g.matrix[x][1])
-                    if str(child.data) is str(g.matrix[x][0]):
-                        self.add_child(TreeNode(str(g.matrix[x][1])))
-                    break
-                    self.create_tree(g,List)
 
+                    if str(child.data) is str(g.matrix[x][0]):
+
+                        for i in child.data:
+                            child.data[i]
+                        List.append(child.data)
+                        self.add_child(TreeNode(str(g.matrix[x][1])))
+                print(List)
+                break
+                self.create_tree(g,List)
+
+        print("-----")
         self.print_tree()
 
 
@@ -115,15 +165,17 @@ def initialize_grammar():
         g = Grammar(inputfile)
         g.initialize_grammar()
         g.print_grammar()
+        root = TreeNode(str(g.beginning_conditions[0]))
+        List = []
+
     except:
         print("file is not correct and did not open.... please put a correct root")
         sys.exit(1)
     else:
         print('The grammar has been created correctly...')
-
-        root = TreeNode(str(g.beginning_conditions[0]))
-        List = []
         root.create_tree(g, List)
+
+
 
 
 
