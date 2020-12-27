@@ -27,16 +27,20 @@ class LinkedList:
             yield node
             node = node.next
 
+
 class Node:
     def __init__(self,data):
         self.data = data
         self.next = None
 
+
 class TreeNode:
+
     def __init__(self, data):
         self.parent = None
         self.children = []
         self.data = data
+        self.list = []
 
 
     def get_level(self):
@@ -65,26 +69,24 @@ class TreeNode:
             for child in self.children:
                 child.print_tree()
 
-    def create_tree(self, g, List):
+    def create_tree(self, g, depth):
 
-        List.append(self.data)
 
-        self.add_child(TreeNode(str(self.data)))
-
-        if len(List)>0:
-
+        if self.children and self.get_level() < depth:
+            print("asd")
             for child in self.children:
                 for x in range(0, len(g.matrix)):
-
+                    #print(str(child.data) + " " + str(g.matrix[x][0] + " " + str(g.matrix[x][1])))
                     if str(child.data) is str(g.matrix[x][0]):
+                        self.add_child(TreeNode(g.matrix[x][1]))
+                        child.list.append(g.matrix[x][0])
+                        child.create_tree(g, depth)
+        elif self.children is None and self.get_level() < depth:
+            self.add_child(TreeNode(str(self.data)))
+            print(self.children)
 
-                        for i in child.data:
-                            child.data[i]
-                        List.append(child.data)
-                        self.add_child(TreeNode(str(g.matrix[x][1])))
-                print(List)
-                break
-                self.create_tree(g,List)
+            self.children[0].create_tree(g, depth)
+
 
         print("-----")
         self.print_tree()
@@ -166,14 +168,20 @@ def initialize_grammar():
         g.initialize_grammar()
         g.print_grammar()
         root = TreeNode(str(g.beginning_conditions[0]))
-        List = []
+
 
     except:
         print("file is not correct and did not open.... please put a correct root")
         sys.exit(1)
     else:
         print('The grammar has been created correctly...')
-        root.create_tree(g, List)
+        while True:
+            print("Give me the word you want to see if it exists in the language: ")
+            word = input()
+            depth = len(word)
+            root.create_tree(g, depth)
+
+            break
 
 
 
