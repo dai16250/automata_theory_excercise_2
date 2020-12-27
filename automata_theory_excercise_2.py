@@ -1,6 +1,11 @@
 import sys, getopt
 from numpy import *
 
+def Union(list1, list2):
+    final_list = list1 + list2
+    return final_list
+
+
 class LinkedList:
 
     def __init__(self, nodes=None):
@@ -57,39 +62,37 @@ class TreeNode:
         print( str ( self.data.parent))
         return self.parent
 
-    def add_child(self, child):
+    def add_child(self, child, list):
         child.parent = self
         self.children.append(child)
+        self.list = self.list + list
+
+    def __repr__(self):
+        return f'{self.data}'
 
     def print_tree(self):
         spaces = ' '*self.get_level()*3
         prefix = spaces + "|__" if self.parent else ""
-        print(prefix + self.data)
+        print(prefix + self.__repr__())
         if self.children:
             for child in self.children:
                 child.print_tree()
 
-    def create_tree(self, g, depth):
+    def add_tree(self, g, depth):
 
-
-        if self.children and self.get_level() < depth:
-            print("asd")
-            for child in self.children:
+        if self.get_level() < depth:
+            for letter in self.data:
                 for x in range(0, len(g.matrix)):
-                    #print(str(child.data) + " " + str(g.matrix[x][0] + " " + str(g.matrix[x][1])))
-                    if str(child.data) is str(g.matrix[x][0]):
-                        self.add_child(TreeNode(g.matrix[x][1]))
-                        child.list.append(g.matrix[x][0])
-                        child.create_tree(g, depth)
-        elif self.children is None and self.get_level() < depth:
-            self.add_child(TreeNode(str(self.data)))
-            print(self.children)
+                    if str(letter) is str(g.matrix[x][0]):
+                        self.add_child(TreeNode(g.matrix[x][1]), self.list)
+                        self.list.append(g.matrix[x][1])
 
-            self.children[0].create_tree(g, depth)
+        for y in range(0, len(self.children)):
+            print(self.list)
+            self.children[y].add_tree(g, depth)
 
 
-        print("-----")
-        self.print_tree()
+
 
 
 class Grammar:
@@ -179,7 +182,8 @@ def initialize_grammar():
             print("Give me the word you want to see if it exists in the language: ")
             word = input()
             depth = len(word)
-            root.create_tree(g, depth)
+            root.add_tree(g, depth)
+            root.print_tree()
 
             break
 
