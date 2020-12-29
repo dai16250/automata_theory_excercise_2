@@ -1,7 +1,7 @@
 3
 SAB
-1
-F
+2
+AB
 S
 8
 S aSb
