@@ -159,6 +159,7 @@ class TreeNode:
 
                 print(str(word) is listToString(child.list))
 
+
                 if str(word) is str(listToString(child.list)):
                     print("vrethike")
                     return True
