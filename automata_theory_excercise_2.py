@@ -1,10 +1,10 @@
 import getopt
 import sys
 
-global empty_sylmbol
 empty_symbol = '@'
-global show_information
 show_information = 0
+found = False
+route = []
 
 
 def union(list1, list2):
@@ -12,35 +12,8 @@ def union(list1, list2):
     return final_list
 
 
-class LinkedList:
-
-    def __init__(self, nodes=None):
-        self.head = None
-        if nodes is not None:
-            node = Node(data=nodes.pop(0))
-            self.head = node
-            for elem in nodes:
-                node.next = Node(data=elem)
-                node = node.next
-
-    def __repr__(self):
-        node = self.head
-        nodes = []
-        while node is not None:
-            nodes.append(node.data)
-            node = node.next
-        nodes.append("None")
-        return " -> ".join(nodes)
-
-    def __iter__(self):
-        node = self.head
-        while node is not None:
-            yield node
-            node = node.next
-
-
 def split_list(a_list, position):
-    return a_list[:position+1], a_list[position+1:]
+    return a_list[:position + 1], a_list[position + 1:]
 
 
 # Function to convert
@@ -52,8 +25,9 @@ def listToString(s):
     for ele in s:
         str1 += ele
 
-        # return string
+    # return string
     return str1
+
 
 class Node:
     def __init__(self, data):
@@ -71,7 +45,11 @@ class TreeNode:
         self.key = None
 
     def get_level(self):
+        """
+        The get_level function take a child and returns how deep is in the tree.
 
+        :return:                The depth of the specific child.
+        """
         level = 0
         p = self.parent
         while p:
@@ -85,6 +63,13 @@ class TreeNode:
         return self.parent
 
     def add_child(self, child, letter):
+        """
+        The add_child function adds a child in the Node.
+
+        :param child:               It adds a child
+        :param letter:              The letter which the action was taken place.
+
+        """
         child.parent = self
         child.key = letter
         self.children.append(child)
@@ -93,6 +78,12 @@ class TreeNode:
         return f'{self.data}'
 
     def print_tree(self):
+        """
+        The print_tree function prints all the children of a Tree.
+
+        :return:                The Tree.
+
+        """
         spaces = ' ' * self.get_level() * 3
         prefix = spaces + "|__" if self.parent else ""
         print(prefix + self.__repr__())
@@ -100,11 +91,18 @@ class TreeNode:
             for child in self.children:
                 child.print_tree()
 
-    def renew_list(self, parent, next, key):
+    def renew_list(self, parent, next_step, key):
+        """
+        The renew_list function takes a the list of a child and changes the information.
 
+        :param parent:                      Is the parent of the child.
+        :param next_step:                   The possible next moves.
+        :param key:                         Is the key letter where the change has occurred.
+        :return:                            The new combined list.
+        """
         if show_information:
             print("The parent is: " + str(parent))
-            print("The next is: " + str(next))
+            print("The next is: " + str(next_step))
             print("The key is: " + str(key))
 
         for x in self.list:
@@ -115,17 +113,24 @@ class TreeNode:
                     print("The list_2 :" + str(list_2))
                 list_1.pop(list_1.index(x))
 
-                for elem in next:
+                for elem in next_step:
                     if elem is not empty_symbol:
                         list_1.append(elem)
                 self.list = list_1 + list_2
                 break
 
-
     def add_tree(self, g, depth, key):
+        """
 
+        The add_tree function it creates the tree with all the possible steps of a given language. The tree's depth is
+        based on the length of a given word (e.g. word: abba --> TreeDepth = 4, word: aab --> TreeDepth = 3).
 
+        :param g:                   g is the Grammar of the language.
+        :param depth:               depth is the depth of the tree.
+        :param key:                 key is the key letter in every singe condition.
+        :return:                    a complete N-depth tree with all the possible roots of a language.
 
+        """
         if self.parent is None:
             for elem in self.data:
                 self.list.append(elem)
@@ -133,12 +138,11 @@ class TreeNode:
             if show_information:
                 print("-----------")
                 self.renew_list(self.parent.data, self.data, key)
-                print("The parent's list: " +str(self.parent.list))
-                print("The child's list: " +str(self.list))
+                print("The parent's list: " + str(self.parent.list))
+                print("The child's list: " + str(self.list))
                 print("-----------")
             else:
                 self.renew_list(self.parent.data, self.data, key)
-
 
         if self.get_level() < depth:
             for letter in self.data:
@@ -150,26 +154,48 @@ class TreeNode:
                 self.children[y].list = union(self.list, self.children[y].list)
                 self.children[y].add_tree(g, depth, self.children[y].key)
 
+    def print_route(self):
+        global route
+        route.append(self)
+
+        if self.parent:
+            self.parent.print_route()
+
+
     def traverse_tree(self, word):
+        """
 
-        if self.children:
+        The traverse_tree function is a breadth-first search algorithm. Is searches a Tree to find if the 'word' belongs
+        to the language.
+
+        :param word:                The word is the word that the user is looking to find if it belongs in the language.
+        :return:                    True if it belongs/False if it does not belong.
+
+        """
+        global found , route
+
+        if self.children and not found:
             for child in self.children:
-
-                print(str(word) + ' ' + listToString(child.list) )
-
-                print(str(word) is listToString(child.list))
-
-
-                if str(word) is str(listToString(child.list)):
-                    print("vrethike")
-                    return True
+                if str(word) == listToString(child.list):
+                    found = True
+                    child.print_route()
+                    for x in range(len(route)-1, -1, -1):
+                        if x is 0:
+                            print(listToString(route[x].list))
+                        else:
+                            print(listToString(route[x].list), end = ' ----> ')
+                    break
                 else:
                     child.traverse_tree(word)
-        else:
-            return False
+
+        return found
 
     def reset_tree(self):
+        """
+        The reset_tree function resets the tree when the user is willing to search if another word belongs to the Language.
 
+        :return:                   The reset tree node.
+        """
         if self.children:
             for child in self.children:
                 child.reset_tree()
@@ -188,6 +214,19 @@ class TreeNode:
 class Grammar:
 
     def __init__(self, file):
+        """
+        The __init__ function creates an object of the grammar class.
+        A 'Grammar Object' is defined by the following variables :
+
+        total_conditions:       all the conditions that the grammar has.
+        non_ending_conditions:  all the non-conditions that the grammar has.That means that the automate machine cannot stop there.
+        ending_conditions:      all the ending-conditions that the grammar has. That means the the automate machine can stop there.
+        alphabet:               is the total letters that the grammar has.
+        file :                  is the file that the programs gathers information about the grammar.
+        matrix:                 is a 2D-matrix that all the necessary information is being stored and the program can use.
+
+        :param file:            is the file that has all the information about the language(It is given by the user).
+        """
         self.total_conditions = []
         self.non_ending_conditions = []
         self.beginning_conditions = []
@@ -197,6 +236,11 @@ class Grammar:
         self.matrix = 0
 
     def initialize_grammar(self):
+        """
+        The initialize_grammar function is processing the file which has the information of the grammar given by the user.
+
+        :return:                An Grammar Object that has all the information from the file given.
+        """
         tmp = self.file.read().split()
 
         K = int(tmp[0])
@@ -239,6 +283,13 @@ class Grammar:
                 self.matrix[j][i] = tmp[(j * 2 + i + 6)]
 
     def print_grammar(self):
+        """
+
+        The print_grammar function takes a Grammar Object.
+
+        :return:                It returns the information of the grammar in a visible way.
+
+        """
         print("M = (K ,Σ ,Γ , Δ , s , F)")
         print("  - K =" + str(self.total_conditions))
         print("  - Σ =" + str(self.alphabet))
@@ -252,25 +303,33 @@ class Grammar:
 
 
 def initialize_grammar():
+    global found
+    global route
+
+    """
+    It open a file given by the user and if no problem occurred during the procedure then it continues to the main
+    program.
+    """
     try:
         print("The file is scanned... ")
-        inputfile = open(sys.argv[1], 'r')
-        g = Grammar(inputfile)
+        file = open(sys.argv[1], 'r')
+        g = Grammar(file)
         g.initialize_grammar()
         g.print_grammar()
-
     except:
         print("file is not correct and did not open.... please put a correct root")
         sys.exit(1)
     else:
-        print('The grammar has been created correctly...')
+        print("--------------------------------------------------------------------\n"
+              'The grammar has been created correctly...')
         while True:
             flag = 0
             print("Give me the word you want to see if it exists in the language: ")
             word = input()
             for letter in word:
                 if letter not in g.alphabet:
-                    print("The word has letters that doesn't belong in the language's alphabet. \nPlease choose another word...\n\n")
+                    print("The word has letters that doesn't belong in the language's alphabet. "
+                          "\nPlease choose another word...\n\n")
                     flag = 1
                     break
 
@@ -278,8 +337,9 @@ def initialize_grammar():
                 root = TreeNode(str(g.beginning_conditions[0]))
                 depth = len(word)
                 root.add_tree(g, depth, g.beginning_conditions[0])
+                root.print_tree()
+
                 if show_information:
-                    root.print_tree()
                     root.print_lists()
 
                 if root.traverse_tree(word):
@@ -288,14 +348,25 @@ def initialize_grammar():
                     print("The word '" + word + "' does not belong to our language!!!!")
 
             print("Do you want to find another word?? Press 'Y' if you want to continue")
+
             if input() is 'Y':
+
                 root.reset_tree()
+                route.clear()
+                found = False
+                print("The program has been restarted\n"
+                      "--------------------------------------------------------------------\n")
             else:
-                print("Thank you for using the program ... the system will terminate now")
+
+                print("--------------------------------------------------------------------\n"
+                      "Thank you for using the program ... the system will terminate now.")
                 sys.exit(0)
 
 
 def main(argv):
+    """
+    The main function is the main program which asks from the user to add the file with the grammar.
+    """
     try:
         opts, args = getopt.getopt(argv, "hi:o", ["ifile=", "ofile="])
     except getopt.GetoptError:
