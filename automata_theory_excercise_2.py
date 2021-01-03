@@ -2,9 +2,12 @@ import getopt
 import sys
 
 empty_symbol = '@'
-show_information = 0
+show_information = 1
 found = False
 route = []
+depth = 0
+word = ''
+letter_counter = []
 
 
 def union(list1, list2):
@@ -29,6 +32,34 @@ def listToString(s):
     return str1
 
 
+def count_digits(g, word_):
+
+    letters = []
+
+    for x in g.alphabet:
+        if x != empty_symbol:
+            letters.append(x)
+
+
+    list = [[0 for x in range(2)] for y in range(len(letters))]
+
+    for index in range(0, len(letters)):
+        list[index][0] = letters[index]
+
+
+    for letter in word_:
+        for index in range(0, len(letters)):
+            if letter == letters[index]:
+                list[index][1] += 1
+                break
+
+    if show_information:
+        for rows in list:
+            print(rows)
+
+    return list
+
+
 class Node:
     def __init__(self, data):
         self.data = data
@@ -43,6 +74,9 @@ class TreeNode:
         self.data = data
         self.list = []
         self.key = None
+
+    def __repr__(self):
+        return f'{self.data}'
 
     def get_level(self):
         """
@@ -73,9 +107,6 @@ class TreeNode:
         child.parent = self
         child.key = letter
         self.children.append(child)
-
-    def __repr__(self):
-        return f'{self.data}'
 
     def print_tree(self):
         """
@@ -119,7 +150,18 @@ class TreeNode:
                 self.list = list_1 + list_2
                 break
 
-    def add_tree(self, g, depth, key):
+    def puming(self, g):
+
+        check = count_digits(g, listToString(self.list))
+
+        for index in range(0 , len(check)):
+            if check[index][1] > letter_counter[index][1]:
+                return False
+            else:
+                return True
+
+
+    def add_tree(self, g, key):
         """
 
         The add_tree function it creates the tree with all the possible steps of a given language. The tree's depth is
@@ -128,12 +170,14 @@ class TreeNode:
         :param g:                   g is the Grammar of the language.
         :param depth:               depth is the depth of the tree.
         :param key:                 key is the key letter in every singe condition.
-        :return:                    a complete N-depth tree with all the possible roots of a language.
+        :return:                    A complete N-depth tree with all the possible roots of a language.
 
         """
+        flag = None
         if self.parent is None:
             for elem in self.data:
                 self.list.append(elem)
+            flag = True
         else:
             if show_information:
                 print("-----------")
@@ -147,12 +191,13 @@ class TreeNode:
         if self.get_level() < depth:
             for letter in self.data:
                 for x in range(0, len(g.matrix)):
-                    if str(letter) is str(g.matrix[x][0]):
+
+                    if str(letter) == str(g.matrix[x][0]) and self.puming(g):
                         self.add_child(TreeNode(g.matrix[x][1]), str(letter))
 
             for y in range(0, len(self.children)):
                 self.children[y].list = union(self.list, self.children[y].list)
-                self.children[y].add_tree(g, depth, self.children[y].key)
+                self.children[y].add_tree(g, self.children[y].key)
 
     def print_route(self):
         global route
@@ -161,8 +206,7 @@ class TreeNode:
         if self.parent:
             self.parent.print_route()
 
-
-    def traverse_tree(self, word):
+    def traverse_tree(self):
         """
 
         The traverse_tree function is a breadth-first search algorithm. Is searches a Tree to find if the 'word' belongs
@@ -172,21 +216,21 @@ class TreeNode:
         :return:                    True if it belongs/False if it does not belong.
 
         """
-        global found , route
+        global found, route
 
         if self.children and not found:
             for child in self.children:
                 if str(word) == listToString(child.list):
                     found = True
                     child.print_route()
-                    for x in range(len(route)-1, -1, -1):
-                        if x is 0:
+                    for x in range(len(route) - 1, -1, -1):
+                        if x == 0:
                             print(listToString(route[x].list))
                         else:
-                            print(listToString(route[x].list), end = ' ----> ')
+                            print(listToString(route[x].list), end=' ----> ')
                     break
                 else:
-                    child.traverse_tree(word)
+                    child.traverse_tree()
 
         return found
 
@@ -273,7 +317,7 @@ class Grammar:
 
         for x in range(6, 6 + N * 2):
             for y in range(0, len(tmp[x])):
-                if tmp[x][y] not in self.alphabet:
+                if tmp[x][y] not in self.alphabet and tmp[x][y] not in self.total_conditions:
                     self.alphabet.append(tmp[x][y])
 
         self.matrix = [[0 for x in range(col)] for y in range(rows)]
@@ -290,21 +334,18 @@ class Grammar:
         :return:                It returns the information of the grammar in a visible way.
 
         """
-        print("M = (K ,Σ ,Γ , Δ , s , F)")
-        print("  - K =" + str(self.total_conditions))
-        print("  - Σ =" + str(self.alphabet))
-        print("  - Γ =")
+        print("G = (V ,Σ ,R , S)")
+        print("  - V =" + str(self.alphabet))
+        print("  - Σ =" + str(self.ending_conditions))
         print("  - s =" + str(self.beginning_conditions))
-        print("  - F =" + str(self.ending_conditions))
-        print("  - D = ")
-
-        for rows in self.matrix:
-            print("      Δ" + str(rows))
+        print("  - R = ")
+        for x in range(0, len(self.matrix)):
+            print("    " + (str(x + 1)) + ') ' + self.matrix[x][0] + " --> " + self.matrix[x][1])
 
 
 def initialize_grammar():
-    global found
-    global route
+    global found, depth, route, word
+    global letter_counter
 
     """
     It open a file given by the user and if no problem occurred during the procedure then it continues to the main
@@ -317,15 +358,16 @@ def initialize_grammar():
         g.initialize_grammar()
         g.print_grammar()
     except:
-        print("file is not correct and did not open.... please put a correct root")
+        print("\nfile is not correct and did not open.... please put a correct root")
         sys.exit(1)
     else:
-        print("--------------------------------------------------------------------\n"
-              'The grammar has been created correctly...')
+        print('The grammar has been created correctly...\n'
+              "--------------------------------------------------------------------")
         while True:
             flag = 0
             print("Give me the word you want to see if it exists in the language: ")
             word = input()
+
             for letter in word:
                 if letter not in g.alphabet:
                     print("The word has letters that doesn't belong in the language's alphabet. "
@@ -334,23 +376,25 @@ def initialize_grammar():
                     break
 
             if not flag:
-                root = TreeNode(str(g.beginning_conditions[0]))
                 depth = len(word)
-                root.add_tree(g, depth, g.beginning_conditions[0])
+                letter_counter = count_digits(g, word)
+
+                root = TreeNode(str(g.beginning_conditions[0]))
+
+                root.add_tree(g, g.beginning_conditions[0])
                 root.print_tree()
 
                 if show_information:
                     root.print_lists()
 
-                if root.traverse_tree(word):
+                if root.traverse_tree():
                     print("The word '" + word + "' belongs to our language!!!!")
                 else:
                     print("The word '" + word + "' does not belong to our language!!!!")
 
             print("Do you want to find another word?? Press 'Y' if you want to continue")
 
-            if input() is 'Y':
-
+            if str(input()) == 'Y':
                 root.reset_tree()
                 route.clear()
                 found = False
