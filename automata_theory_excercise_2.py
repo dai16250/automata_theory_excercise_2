@@ -2,7 +2,6 @@ import getopt
 import sys
 
 
-"Test1"
 empty_symbol = '@'
 show_information = 1
 found = False
@@ -70,11 +69,11 @@ class Node:
 
 class TreeNode:
 
-    def __init__(self, data):
+    def __init__(self, data, list):
         self.parent = None
         self.children = []
         self.data = data
-        self.list = []
+        self.list = list
         self.key = None
 
     def __repr__(self):
@@ -150,6 +149,7 @@ class TreeNode:
                     if elem is not empty_symbol:
                         list_1.append(elem)
                 self.list = list_1 + list_2
+                print(self.list)
                 break
 
     def puming(self, g):
@@ -163,7 +163,7 @@ class TreeNode:
                 return True
 
 
-    def add_tree(self, g, key):
+    def add_tree(self, g):
         """
 
         The add_tree function it creates the tree with all the possible steps of a given language. The tree's depth is
@@ -175,31 +175,42 @@ class TreeNode:
         :return:                    A complete N-depth tree with all the possible roots of a language.
 
         """
-        flag = None
-        if self.parent is None:
-            for elem in self.data:
-                self.list.append(elem)
-            flag = True
-        else:
-            if show_information:
-                print("-----------")
-                self.renew_list(self.parent.data, self.data, key)
-                print("The parent's list: " + str(self.parent.list))
-                print("The child's list: " + str(self.list))
-                print("-----------")
-            else:
-                self.renew_list(self.parent.data, self.data, key)
+
+        asdd = []
 
         if self.get_level() < depth:
             for letter in self.data:
-                for x in range(0, len(g.matrix)):
+                for index in range(0, len(g.matrix)):
+                    if letter == g.matrix[index][0]:
+                        self.add_child(TreeNode(g.matrix[index][1], []), letter)
 
-                    if str(letter) == str(g.matrix[x][0]) and self.puming(g):
-                        self.add_child(TreeNode(g.matrix[x][1]), str(letter))
 
-            for y in range(0, len(self.children)):
-                self.children[y].list = union(self.list, self.children[y].list)
-                self.children[y].add_tree(g, self.children[y].key)
+
+                for child in self.children:
+                    child.list.append(child.data)
+                    child.renew_list(self.data, child.data, child.key)
+                    child.add_tree(g)
+
+
+
+
+        """
+        if self.parent:
+            self.list.append(self.data)
+            if self.get_level() < depth:
+                for letter in self.data:
+                    for x in range(0, len(g.matrix)):
+                        if str(letter) == str(g.matrix[x][0]) and self.puming(g):
+                            self.add_child(TreeNode(g.matrix[x][1]), str(letter))
+
+                for y in range(0, len(self.children)):
+                    self.children[y].list = union(self.list, self.children[y].list)
+                    self.children[y].renew_list(self.data, self.children[y].data, self.key)
+                    self.children[y].add_tree(g, self.children[y].key)
+        """
+
+
+
 
     def print_route(self):
         global route
@@ -381,9 +392,10 @@ def initialize_grammar():
                 depth = len(word)
                 letter_counter = count_digits(g, word)
 
-                root = TreeNode(str(g.beginning_conditions[0]))
+                root = TreeNode(str(g.beginning_conditions[0]), [])
+                root.list.append(root.data)
+                root.add_tree(g)
 
-                root.add_tree(g, g.beginning_conditions[0])
                 root.print_tree()
 
                 if show_information:
