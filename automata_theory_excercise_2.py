@@ -267,12 +267,14 @@ class TreeNode:
                 self.list.append(elem)
 
         if self.get_level() < depth:
+
             for letter in listToString(self.list):
 
                 checker = puming(self.list, g)
                 for index in range(0, len(checker)):
                     if letter == checker[index][0]:
                         self.add_child(TreeNode(checker[index][1]), letter)
+
 
         for child in self.children:
             child.add_tree(g)
