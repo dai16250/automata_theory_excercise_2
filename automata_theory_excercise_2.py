@@ -204,7 +204,7 @@ class TreeNode:
 
         spaces = ' ' * self.get_level() * 3
         prefix = spaces + "|__" if self.parent else ""
-        print(prefix + self.__repr__())
+        print(prefix + str(self.data))
         if self.children:
             for child in self.children:
                 child.print_tree()
@@ -221,11 +221,13 @@ class TreeNode:
         if show_information:
             print("The parent is: " + str(parent))
             print("The next is: " + str(next_step))
-            print("The key is: " + str(key))
-
         self.list = parent
 
         for x in self.list:
+
+            if show_information:
+                print("The key is: " + str(key))
+
             if str(x) == str(key):
                 list_1, list_2 = split_list(self.list, self.list.index(x))
                 if show_information:
@@ -238,7 +240,11 @@ class TreeNode:
                         list_1.append(elem)
 
                 self.list = list_1 + list_2
-                break
+
+
+
+
+
 
     def add_tree(self, g):
         """
@@ -261,7 +267,7 @@ class TreeNode:
                 self.list.append(elem)
 
         if self.get_level() < depth:
-            for letter in self.data:
+            for letter in listToString(self.list):
 
                 checker = puming(self.list, g)
                 for index in range(0, len(checker)):
@@ -279,7 +285,7 @@ class TreeNode:
         if self.parent:
             self.parent.print_route()
         else:
-            print("--------------The route of the algorithm to find the word---------")
+            print("------------The route of the algorithm to find the word-------------\n")
 
     def traverse_tree(self):
         """
@@ -393,7 +399,6 @@ class Grammar:
                 sys.exit(1)
 
         self.beginning_conditions.append(str(tmp[4]))
-
         N = int(tmp[5])
 
         col = 2
@@ -466,19 +471,19 @@ def initialize_grammar():
                 root = TreeNode(str(g.beginning_conditions[0]))
                 root.add_tree(g)
 
-                root.print_lists()
-                print('\n')
-                root.print_tree()
-
                 if show_information:
                     root.print_lists()
+                    print('\n')
+                    root.print_tree()
+                print('\n')
+
+                if root.traverse_tree():
+                    print("\nThe word '" + word + "' belongs to our language!!!!")
+                else:
+                    print("\nThe word '" + word + "' does not belong to our language!!!!")
 
                 print('\n')
-                if root.traverse_tree():
-                    print("The word '" + word + "' belongs to our language!!!!")
-                else:
-                    print("The word '" + word + "' does not belong to our language!!!!")
-
+            print("--------------------------------------------------------------------")
             print("Do you want to find another word?? Press 'Y' if you want to continue")
 
             if str(input()) == 'Y':
