@@ -188,24 +188,6 @@ class TreeNode:
         child.key = letter
         self.children.append(child)
 
-    def print_tree(self):
-        """
-        The print_tree function prints all the children of a Tree.
-
-        :return:                The Tree.
-
-        """
-        if not self.parent:
-            print("-------------The Tree is being displayed bellow-------------------")
-
-        spaces = ' ' * self.get_level() * 3
-        prefix = spaces + "|__" if self.parent else ""
-        print(prefix + str(self.data))
-        # print(prefix + listToString(self.list))
-        if self.children:
-            for child in self.children:
-                child.print_tree()
-
     def renew_list(self, parent, next_step, key):
         """
         The renew_list function takes a the list of a child and changes the information.
@@ -258,14 +240,14 @@ class TreeNode:
             for elem in self.data:
                 self.list.append(elem)
 
-        if self.get_level() < depth:
+        #if self.get_level() < depth:
 
-            for letter in listToString(self.list):
+        for letter in listToString(self.list):
 
-                checker = puming(self.list)
-                for index in range(0, len(checker)):
-                    if letter == checker[index][0]:
-                        self.add_child(TreeNode(checker[index][1]), letter)
+            checker = puming(self.list)
+            for index in range(0, len(checker)):
+                if letter == checker[index][0]:
+                    self.add_child(TreeNode(checker[index][1]), letter)
 
         for child in self.children:
             child.add_tree()
@@ -320,6 +302,26 @@ class TreeNode:
             self.list.clear()
             self.key = None
             self.parent = None
+
+
+    def print_tree(self):
+        """
+        The print_tree function prints all the children of a Tree.
+
+        :return:                The Tree.
+
+        """
+        if not self.parent:
+            print("-------------The Tree is being displayed bellow-------------------")
+
+        spaces = ' ' * self.get_level() * 3
+        prefix = spaces + "|__" if self.parent else ""
+        print(prefix + str(self.data))
+        #print(prefix + listToString(self.list))
+        if self.children:
+            for child in self.children:
+                child.print_tree()
+
 
     def print_lists(self):
         """
@@ -457,7 +459,8 @@ def initialize_grammar():
                     break
 
             if not flag:
-                depth = len(word)
+
+                depth = 7
                 letter_counter = count_digits(word)
 
                 root = TreeNode(str(g.beginning_conditions[0]))
@@ -495,6 +498,8 @@ def main(argv):
     """
     The main function is the main program which asks from the user to add the file with the grammar.
     """
+
+
     try:
         opts, args = getopt.getopt(argv, "hi:o", ["ifile=", "ofile="])
     except getopt.GetoptError:
@@ -502,8 +507,10 @@ def main(argv):
         sys.exit(2)
 
     if len(sys.argv) != 2:
-        print("Not the correct format.... python test.py <file.txt>")
+        print("Not the correct format.... python <test.py> <file.txt>")
         sys.exit(1)
+
+
 
     initialize_grammar()
 
