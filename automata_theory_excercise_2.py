@@ -18,7 +18,11 @@ found = False
 route = []
 depth = 0
 word = ''
+root = None
+g = None
 letter_counter = []
+list_1 = None
+list_2 = None
 
 
 def union(list1, list2):
@@ -46,7 +50,6 @@ def split_list(a_list, position):
     return a_list[:position + 1], a_list[position + 1:]
 
 
-
 def listToString(s):
     """
     The listToString function creates a string word for the letters of a list
@@ -65,13 +68,12 @@ def listToString(s):
     return str1
 
 
-def count_digits(g, word_):
+def count_digits(word_):
     """
     The count_digits function takes the word given by the user and counts how many copies of each letter it has.
     This function return that amount in a 2D-list representing a good idea on which leaf the program is going to cut
     in order the tree will no have any child that is proven it will no longer have a possible correct result.
 
-    :param g:                           g is the grammar
     :param word_:                       word is the word given by the user
     :return:                            the list with all the letters counted
     """
@@ -81,12 +83,10 @@ def count_digits(g, word_):
         if x != empty_symbol:
             letters.append(x)
 
-
-    list = [[0 for x in range(2)] for y in range(len(letters))]
+    list = [[0 for z in range(2)] for y in range(len(letters))]
 
     for index in range(0, len(letters)):
         list[index][0] = letters[index]
-
 
     for letter in word_:
         for index in range(0, len(letters)):
@@ -101,13 +101,11 @@ def count_digits(g, word_):
     return list
 
 
-def puming(array, g):
-
+def puming(array):
     """
     The puming function cuts the leaf of the tree that is proven they wont lead to a result.
 
     :param array:                   array is the matrix which has all the possible moves
-    :param g:                       g is the grammar
     :return:                        the puming_matrix which only has items from the g.matrix showing the next step
     """
 
@@ -115,14 +113,12 @@ def puming(array, g):
     count = 0
     puming_matrix = []
 
-    check = count_digits(g, listToString(array))
+    check = count_digits(listToString(array))
 
     for index in range(0, len(check)):
         if check[index][1] == letter_counter[index][1]:
             flag.append(check[index][0])
             count += 1
-
-
 
     for rows in g.matrix:
         good = True
@@ -192,23 +188,6 @@ class TreeNode:
         child.key = letter
         self.children.append(child)
 
-    def print_tree(self):
-        """
-        The print_tree function prints all the children of a Tree.
-
-        :return:                The Tree.
-
-        """
-        if not self.parent:
-            print("-------------The Tree is being displayed bellow-------------------")
-
-        spaces = ' ' * self.get_level() * 3
-        prefix = spaces + "|__" if self.parent else ""
-        print(prefix + str(self.data))
-        if self.children:
-            for child in self.children:
-                child.print_tree()
-
     def renew_list(self, parent, next_step, key):
         """
         The renew_list function takes a the list of a child and changes the information.
@@ -218,47 +197,42 @@ class TreeNode:
         :param key:                         Is the key letter where the change has occurred.
         :return:                            The new combined list.
         """
+        global list_1, list_2
+
         if show_information:
             print("The parent is: " + str(parent))
             print("The next is: " + str(next_step))
-        self.list = parent
+            print("The key is: " + str(key))
 
-        for x in self.list:
-
-            if show_information:
-                print("The key is: " + str(key))
+        tmp = parent
+        for x in tmp:
 
             if str(x) == str(key):
-                list_1, list_2 = split_list(self.list, self.list.index(x))
+
+                list_1, list_2 = split_list(tmp, tmp.index(x))
                 if show_information:
                     print("The list_1 :" + str(list_1))
                     print("The list_2 :" + str(list_2))
+
                 list_1.pop(list_1.index(x))
+
+                tmp = list_1 + list_2
 
                 for elem in next_step:
                     if elem is not empty_symbol:
                         list_1.append(elem)
 
-                self.list = list_1 + list_2
+        self.list = list_1 + list_2
 
-
-
-
-
-
-    def add_tree(self, g):
+    def add_tree(self):
         """
 
         The add_tree function it creates the tree with all the possible steps of a given language. The tree's depth is
         based on the length of a given word (e.g. word: abba --> TreeDepth = 4, word: aab --> TreeDepth = 3).
 
-        :param g:                   g is the Grammar of the language.
-        :param depth:               depth is the depth of the tree.
-        :param key:                 key is the key letter in every singe condition.
         :return:                    A complete N-depth tree with all the possible roots of a language.
 
         """
-
 
         if self.parent:
             self.renew_list(self.parent.list, self.data, self.key)
@@ -266,23 +240,21 @@ class TreeNode:
             for elem in self.data:
                 self.list.append(elem)
 
-        if self.get_level() < depth:
+        #if self.get_level() < depth:
 
-            for letter in listToString(self.list):
+        for letter in listToString(self.list):
 
-                checker = puming(self.list, g)
-                for index in range(0, len(checker)):
-                    if letter == checker[index][0]:
-                        self.add_child(TreeNode(checker[index][1]), letter)
-
+            checker = puming(self.list)
+            for index in range(0, len(checker)):
+                if letter == checker[index][0]:
+                    self.add_child(TreeNode(checker[index][1]), letter)
 
         for child in self.children:
-            child.add_tree(g)
+            child.add_tree()
 
     def print_route(self):
         global route
         route.append(self)
-
 
         if self.parent:
             self.parent.print_route()
@@ -295,7 +267,6 @@ class TreeNode:
         The traverse_tree function is a breadth-first search algorithm. Is searches a Tree to find if the 'word' belongs
         to the language.
 
-        :param word:                The word is the word that the user is looking to find if it belongs in the language.
         :return:                    True if it belongs/False if it does not belong.
 
         """
@@ -332,6 +303,26 @@ class TreeNode:
             self.key = None
             self.parent = None
 
+
+    def print_tree(self):
+        """
+        The print_tree function prints all the children of a Tree.
+
+        :return:                The Tree.
+
+        """
+        if not self.parent:
+            print("-------------The Tree is being displayed bellow-------------------")
+
+        spaces = ' ' * self.get_level() * 3
+        prefix = spaces + "|__" if self.parent else ""
+        print(prefix + str(self.data))
+        #print(prefix + listToString(self.list))
+        if self.children:
+            for child in self.children:
+                child.print_tree()
+
+
     def print_lists(self):
         """
         The print_lists function returns the value of the list from all the Nodes in the root
@@ -341,13 +332,14 @@ class TreeNode:
         if not self.parent:
             print('--------All the possible words that are being created ------------')
 
-        print(listToString(self.list) , end= ', ')
+        print(listToString(self.list), end=', ')
         for child in self.children:
             child.print_lists()
 
 
-
 class Grammar:
+
+    global g
 
     def __init__(self, file):
         """
@@ -435,7 +427,7 @@ class Grammar:
 
 
 def initialize_grammar():
-    global found, depth, route, word
+    global found, depth, route, word, root, g
     global letter_counter
 
     """
@@ -467,11 +459,12 @@ def initialize_grammar():
                     break
 
             if not flag:
-                depth = len(word)
-                letter_counter = count_digits(g, word)
+
+                depth = 7
+                letter_counter = count_digits(word)
 
                 root = TreeNode(str(g.beginning_conditions[0]))
-                root.add_tree(g)
+                root.add_tree()
 
                 if show_information:
                     root.print_lists()
@@ -505,6 +498,8 @@ def main(argv):
     """
     The main function is the main program which asks from the user to add the file with the grammar.
     """
+
+
     try:
         opts, args = getopt.getopt(argv, "hi:o", ["ifile=", "ofile="])
     except getopt.GetoptError:
@@ -512,8 +507,10 @@ def main(argv):
         sys.exit(2)
 
     if len(sys.argv) != 2:
-        print("Not the correct format.... python test.py <file.txt>")
+        print("Not the correct format.... python <test.py> <file.txt>")
         sys.exit(1)
+
+
 
     initialize_grammar()
 
